@@ -1,3 +1,11 @@
-import data_agent
+from data_agent import *
+from datatype import *
 from sys import argv
-data_agent.input_data(argv[1])
+
+init_coe = []
+equ = linear_equ(17,
+                 [],
+                 init_coe)
+learning_rate = 10;
+
+
