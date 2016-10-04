@@ -51,7 +51,7 @@ class linear_equ:
             #print err
             return err
         else:
-            return 2 * (data.get_f_pm() - data.function_ans)
+            return 2 * (data.get_f_pm() - data.function_ans) * -1
 
     def print_coe(self):
         print [round(i, 4) for i in self.coe]

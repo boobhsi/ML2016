@@ -5,7 +5,7 @@ import random
 
 model_order = [1] * 8 * 18 + [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 learning_rate = 0.0000017
-smoother = 0.00005
+smoother = 0.05
 
 coe_count = sum(model_order) + 1
 random.seed()
