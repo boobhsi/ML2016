@@ -1,21 +1,11 @@
-#from __future__ import print_function
 import sys
 import numpy as np
-from datatype2 import dataset
+from datatype import dataset
 
 def input_training_data(adr, sh, hr):
     itdata = np.genfromtxt(adr, delimiter = ",", usecols = range(3,27), dtype = 'str', skip_header = 1)
     data = dataset(sh, hr)
     for i in range(len(itdata)/18/20):
-        """
-        if i % 3 == 0:
-            print("importing training data.", end = "\r")
-        elif i % 3 == 1:
-            print("importing training data..", end = "\r")
-        else:
-            print("importing training data...", end = "\r")
-        sys.stdout.flush()
-        """
         idata = itdata[(i * 360):((i + 1) * 360)]
         ten_hours_counter = 0
         pre_col = 0
