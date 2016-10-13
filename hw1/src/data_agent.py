@@ -1,13 +1,23 @@
+#from __future__ import print_function
+import sys
 import numpy as np
-from datatype import obv_data
+from datatype2 import dataset
 
-def input_training_data(adr):
+def input_training_data(adr, sh, hr):
     itdata = np.genfromtxt(adr, delimiter = ",", usecols = range(3,27), dtype = 'str', skip_header = 1)
-    dataset = []
+    data = dataset(sh, hr)
     for i in range(len(itdata)/18/20):
+        """
+        if i % 3 == 0:
+            print("importing training data.", end = "\r")
+        elif i % 3 == 1:
+            print("importing training data..", end = "\r")
+        else:
+            print("importing training data...", end = "\r")
+        sys.stdout.flush()
+        """
         idata = itdata[(i * 360):((i + 1) * 360)]
         ten_hours_counter = 0
-        data = obv_data()
         pre_col = 0
         col = 0
         pre_ri = 0
@@ -20,43 +30,49 @@ def input_training_data(adr):
                 row_index += 18
                 col = 0
                 continue
+
             if ten_hours_counter == 10:
-                dataset.append(data)
-                data = obv_data()
+                data.append()
                 ten_hours_counter = 0
                 if pre_col == 23:
                     pre_col = 0
                     pre_ri += 18
                 else:
-                    pre_col += 1
+                   pre_col += 1
                 if no_overlap:
                     no_overlap = False
                 col = pre_col
                 row_index = pre_ri
                 continue
             if no_overlap:
-                data.add_oh_para([0.0 if i == 10 and idata[row_index + i][col] == "NR" else float(idata[row_index + i][col]) for i in range(18)], True)
+                data.add_single_hour([0.0 if i == 10 and idata[row_index + i][col] == "NR" else float(idata[row_index + i][col]) for i in range(18)], True, True if ten_hours_counter == 9 else False)
             else:
-                data.add_oh_para([0.0 if i == 10 and idata[row_index + i][col] == "NR" else float(idata[row_index + i][col]) for i in range(18)], True if ten_hours_counter == 9 else False)
+                data.add_single_hour([0.0 if i == 10 and idata[row_index + i][col] == "NR" else float(idata[row_index + i][col]) for i in range(18)], True if ten_hours_counter == 9 else False, True if ten_hours_counter == 9 else False)
             ten_hours_counter += 1
             col += 1
-        dataset.append(data)
-    return dataset
+        data.append()
+        #print adad
+    return data
 
-def input_testing_data(adr):
+def input_testing_data(adr, sh, hr):
     idata = np.genfromtxt(adr, delimiter = ",", usecols = [0] + range(2,11), dtype = "str")
-    dataset = []
+    data = dataset(sh, hr)
     for row_index in range(0, len(idata), 18):
-        data = obv_data(idata[row_index][0])
+        data.add_name(idata[row_index][0])
         for col in range(1,10):
-            data.add_oh_para([0.0 if i == 10 and idata[row_index + i][col] == "NR" else float(idata[row_index + i][col]) for i in range(18)], False)
-        dataset.append(data)
-    return dataset
+            data.add_single_hour([0.0 if i == 10 and idata[row_index + i][col] == "NR" else float(idata[row_index + i][col]) for i in range(18)], False, False)
+        data.append()
+    return data
 
-def output_result(adr, data):
+def output_result(adr, data, err):
     odata = open(adr, 'w')
     odata.write("id,value\n")
-    for i in data:
-        odata.write("{0},{1}\n".format(i.name, int(i.function_ans)))
+    name_set = data.get_name()
+    function_ans_set = data.get_f_ans()
+    #print function_ans_set.shape
+    #print data.get_size()
+    for i in range(data.get_size()):
+        odata.write("{0},{1}\n".format(name_set[i], int(function_ans_set[i, 0])))
+    odata.write("{0}\n".format(err))
 
 
