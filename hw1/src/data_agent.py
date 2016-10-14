@@ -41,28 +41,23 @@ def input_training_data(adr, sh, hr):
             ten_hours_counter += 1
             col += 1
         data.append()
-        #print adad
     return data
 
-def input_testing_data(adr, sh, hr):
-    idata = np.genfromtxt(adr, delimiter = ",", usecols = [0] + range(2,11), dtype = "str")
+def input_testing_data(adr, sh, hr, val):
+    idata = np.genfromtxt(adr, delimiter = ",", usecols = [0] + range(2,11 if val == 0 else 12), dtype = "str")
     data = dataset(sh, hr)
     for row_index in range(0, len(idata), 18):
         data.add_name(idata[row_index][0])
-        for col in range(1,10):
-            data.add_single_hour([0.0 if i == 10 and idata[row_index + i][col] == "NR" else float(idata[row_index + i][col]) for i in range(18)], False, False)
+        for col in range(1,10 if val == 0 else 11):
+            data.add_single_hour([0.0 if i == 10 and idata[row_index + i][col] == "NR" else float(idata[row_index + i][col]) for i in range(18)], False, False if col != 10 else True)
         data.append()
     return data
 
-def output_result(adr, data, err):
+def output_result(adr, data):
     odata = open(adr, 'w')
     odata.write("id,value\n")
     name_set = data.get_name()
     function_ans_set = data.get_f_ans()
-    #print function_ans_set.shape
-    #print data.get_size()
     for i in range(data.get_size()):
         odata.write("{0},{1}\n".format(name_set[i], int(function_ans_set[i, 0])))
-    odata.write("{0}\n".format(err))
-
-
+    odata.close()

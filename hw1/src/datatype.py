@@ -81,21 +81,19 @@ class dataset:
 
 class linear_equ:
     def __init__(self, order, coe, bias, max_order, data_count):
-        self.order = order
-        self.coe = coe
+	self.coe = coe  * order
         self.bias = 0.0
         self.max_order = max_order
         self.data_count = data_count
 
     def ans(self, var):
-        coe = self.coe * self.order
-        answer = np.dot(var, np.transpose(coe[:,:,0]))
+        answer = np.dot(var, np.transpose(self.coe[:,:,0]))
         for i in range(1, self.max_order):
-            answer += np.dot((var ** (i + 1)), np.transpose(coe[:,:,i]))
+            answer += np.dot((var ** (i + 1)), np.transpose(self.coe[:,:,i]))
         return self.bias + answer
 
-    def change_coe(self, new_coe, new_bias):
-        self.coe = new_coe
+    def change_coe(self, new_coe, new_bias, order):
+        self.coe = new_coe * order
         self.bias = new_bias
 
     def err_by_var(self, var, ta, data_count):
@@ -105,9 +103,7 @@ class linear_equ:
         return (np.sum((data.get_train_pm() - data.get_f_ans()) ** 2) / data.get_size()) ** 0.5
 
     def err_pd_coe(self, data):
-
         temp = data.get_var()
-        coe = self.coe * self.order
         gra = np.dot(np.transpose((data.get_train_pm() - data.get_f_ans())[:, :]), temp)[:, :, np.newaxis]
         for i in range(1, self.max_order):
             gra = np.dstack((gra, (np.dot(np.transpose((data.get_train_pm() - data.get_f_ans())[:, :]), temp ** (i + 1))[:, :, np.newaxis])))

@@ -1,6 +1,4 @@
 ENV
-hw1/data
-hw1/test_result
 *.pyc
-*.csv
-*.py.swp
+*.swp
+*/report_doc
