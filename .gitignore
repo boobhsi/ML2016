@@ -2,3 +2,4 @@ ENV
 *.pyc
 *.swp
 */report_doc
+*/data
