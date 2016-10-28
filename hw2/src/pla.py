@@ -1,6 +1,6 @@
 import numpy as np
 from sys import argv
-from neuron import *
+from pla_agent import *
 import pickle
 
 def normalize(data):
@@ -16,7 +16,6 @@ if int(argv[1]) == 1:
     model_data =open(argv[2], "rb")
     ne = pickle.load(model_data)
     model_data.close()
-    print argv[3]
     tdata = np.genfromtxt(argv[3], delimiter = ",", dtype = "float", usecols = range(1, 58))
     tdata = np.array(tdata)
     tdata = normalize(tdata)
@@ -48,17 +47,17 @@ else:
     iteration = int(argv[3])
 
     #lr
-    learning_rate = float(argv[4])
+    #learning_rate = float(argv[4])
 
     #init_ans
-    ne.init_ans(data)
+    #ne.init_ans(data)
 
-    while(iteration > 0):
-        iteration -= 1
-        ne.refresh_para(data, learning_rate, train_ans)
+    #while(iteration > 0):
+    #    iteration -= 1
+    ne.refresh_para(data, train_ans, iteration)
         #print "{0}th iteration: ce = {1}".format(int(argv[3]) - iteration, ne.cal_cross_entropy(train_ans))
-	print "{0}th iteration".format(int(argv[3]) - iteration)
+    #	print "{0}th iteration".format(int(argv[3]) - iteration)
 
     #output_neuron
-    with open(argv[5], "wb") as output:
+    with open(argv[4], "wb") as output:
         pickle.dump(ne, output, pickle.HIGHEST_PROTOCOL)

@@ -1,1 +1,1 @@
-python src/main.py 1 $1 $2 $3
+python src/pla.py 1 $1 $2 $3
