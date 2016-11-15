@@ -2,7 +2,7 @@ from keras.models import Sequential, load_model
 from keras.layers import Dense, Activation, Flatten, Dropout
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
-from keras.optimizers import Adam
+from keras.optimizers import Adam, RMSprop
 from keras.callbacks import EarlyStopping
 from keras.preprocessing.image import ImageDataGenerator
 import pickle
@@ -83,8 +83,8 @@ model.add(MaxPooling2D((2,2)))
 #model.add(Dropout(0.25))
 model.add(Flatten())
 model.add(Dense(output_dim=200))
-model.add(Activation("relu"))
-model.add(Dropout(0.3))
+model.add(Activation("sigmoid"))
+model.add(Dropout(0.25))
 #model.add(Dense(output_dim=200))
 #model.add(Activation("relu"))
 #model.add(Dropout(0.3))
@@ -111,11 +111,12 @@ model.add(Dense(output_dim=100))
 model.add(Activation("relu"))
 """
 
-ao = Adam(lr=0.0001)
+ao = Adam(lr=0.0002)
+rp = RMSprop(lr=0.001)
 model.add(Dense(output_dim=10))
 model.add(Activation("softmax"))
 model.compile(loss="categorical_crossentropy",
-              optimizer=ao,
+              optimizer=rp,
               metrics=["accuracy"])
 datagen.fit(training_data)
 
@@ -135,8 +136,8 @@ def fit_model(tx, ty):
     while(max_time > 0):
         print "{0}th epoch, continuous overfitting: {1}".format(self_counter, cons_non_decay)
         print "current best val_acc = {0}".format(val_acc_max)
-        #hist = model.fit_generator(datagen.flow(tx, ty, batch_size=int(argv[1])*5), nb_epoch=1, validation_data=(vali_data, vali_ans), samples_per_epoch=training_data.shape[0]*5)
-        hist = model.fit(tx, ty, batch_size=int(argv[1])*switch, nb_epoch=1, validation_data=(vali_data, vali_ans))
+        hist = model.fit_generator(datagen.flow(tx, ty, batch_size=int(argv[1])*3), nb_epoch=1, validation_data=(vali_data, vali_ans), samples_per_epoch=training_data.shape[0]*3)
+        #hist = model.fit(tx, ty, batch_size=int(argv[1])*switch, nb_epoch=1, validation_data=(vali_data, vali_ans))
         print hist.history
         self_counter += 1
         if hist.history["val_acc"][0] > val_acc_max:
