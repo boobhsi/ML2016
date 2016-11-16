@@ -74,20 +74,20 @@ print "Check the shape of validation outputs: {0}".format(vali_ans.shape)
 model.add(Convolution2D(20,3,3,input_shape=(3,32,32)))
 model.add(Activation("relu"))
 model.add(MaxPooling2D((2,2)))
-model.add(Convolution2D(20,3,3))
-model.add(Activation("relu"))
-model.add(MaxPooling2D((2,2)))
+#model.add(Convolution2D(20,3,3))
+#model.add(Activation("relu"))
+#model.add(MaxPooling2D((2,2)))
 model.add(Convolution2D(50,3,3))
 model.add(Activation("relu"))
 model.add(MaxPooling2D((2,2)))
 #model.add(Dropout(0.25))
 model.add(Flatten())
-model.add(Dense(output_dim=200))
+model.add(Dense(output_dim=60))
 model.add(Activation("sigmoid"))
-model.add(Dropout(0.25))
-#model.add(Dense(output_dim=200))
+model.add(Dropout(0.5))
+#model.add(Dense(output_dim=60))
 #model.add(Activation("relu"))
-#model.add(Dropout(0.3))
+#model.add(Dropout(0.5))
 #model.add(Dense(output_dim=200))
 #model.add(Activation("relu"))
 #model.add(Dropout(0.3))
@@ -111,12 +111,12 @@ model.add(Dense(output_dim=100))
 model.add(Activation("relu"))
 """
 
-ao = Adam(lr=0.0002)
-rp = RMSprop(lr=0.001)
+ao = Adam(lr=0.00005)
+rp = RMSprop(lr=0.0005)
 model.add(Dense(output_dim=10))
 model.add(Activation("softmax"))
 model.compile(loss="categorical_crossentropy",
-              optimizer=rp,
+              optimizer=ao,
               metrics=["accuracy"])
 datagen.fit(training_data)
 
@@ -127,7 +127,7 @@ self_counter = 1
 switch = 1
 
 def fit_model(tx, ty):
-    max_time = 1000
+    max_time = 10000
     global cons_non_decay
     global val_acc_max
     global val_loss_min
@@ -136,8 +136,8 @@ def fit_model(tx, ty):
     while(max_time > 0):
         print "{0}th epoch, continuous overfitting: {1}".format(self_counter, cons_non_decay)
         print "current best val_acc = {0}".format(val_acc_max)
-        hist = model.fit_generator(datagen.flow(tx, ty, batch_size=int(argv[1])*3), nb_epoch=1, validation_data=(vali_data, vali_ans), samples_per_epoch=training_data.shape[0]*3)
-        #hist = model.fit(tx, ty, batch_size=int(argv[1])*switch, nb_epoch=1, validation_data=(vali_data, vali_ans))
+        #hist = model.fit_generator(datagen.flow(tx, ty, batch_size=int(argv[1])*3), nb_epoch=1, validation_data=(vali_data, vali_ans), samples_per_epoch=training_data.shape[0]*3)
+        hist = model.fit(tx, ty, batch_size=int(argv[1])*switch, nb_epoch=1, validation_data=(vali_data, vali_ans))
         print hist.history
         self_counter += 1
         if hist.history["val_acc"][0] > val_acc_max:
@@ -145,8 +145,9 @@ def fit_model(tx, ty):
             cons_non_decay = 0
             val_acc_max = hist.history["val_acc"][0]
         else: cons_non_decay += 1
-        if cons_non_decay == int(argv[3]): break
+        if cons_non_decay == int(argv[3]) and int(argv[3]) != -1: break
         max_time -= 1
+        if max_time == 0: break
 
 if int(argv[2])==0:
     fit_model(training_data, training_ans)
@@ -167,13 +168,12 @@ elif int(argv[2])==1:
         new_ty = []
 
         for i in range(aul.shape[0]):
-            """
             ul_tobe_l = np.expand_dims(aul[i], axis=0)
             if random.random() < new_ans[i][new_class[i]]:
                 temp = [0] * class_count
                 temp[new_class[i]] = 1
                 temp = np.expand_dims(np.array(temp), axis=0)
-                if not isinstance(new_ty np.ndarray):
+                if not isinstance(new_ty, np.ndarray):
                     new_tx = ul_tobe_l
                     new_ty = temp
                 else:
@@ -182,7 +182,7 @@ elif int(argv[2])==1:
                     new_tx = np.concatenate((new_tx, ul_tobe_l), axis=0)
                     new_ty = np.concatenate((new_ty, temp), axis=0)
                 new_l_counter += 1
-               """
+            print i
             temp = [0] * class_count
             temp[new_class[i]] = 1
             new_ty = new_ty + [temp]
@@ -190,7 +190,7 @@ elif int(argv[2])==1:
         #print "There are {0} new data".format(new_l_counter)
         new_ty = np.array(new_ty)
         #print new_ty.shape
-        new_tx = np.concatenate((training_data, aul), axis=0)
+        new_tx = np.concatenate((training_data, new_tx), axis=0)
         new_ty = np.concatenate((training_ans, new_ty), axis=0)
 
         fit_model(new_tx, new_ty)
