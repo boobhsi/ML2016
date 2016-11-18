@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 from sys import argv
 
-al = pickle.load(open(argv[1], "rb"))
+al = pickle.load(open(argv[1] + "test.p", "rb"))
 model = load_model(argv[2])
 testing_data = np.array(al["data"]).reshape(10000, 3, 32, 32)
 
