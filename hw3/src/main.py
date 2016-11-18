@@ -9,7 +9,7 @@ import pickle
 import numpy as np
 import random
 from sys import argv
-from sklearn.cluster import KMeans
+from keras.layers.normalization import BatchNormalization
 
 early_stopping = EarlyStopping(monitor="val_loss", patience=5, min_delta=0.000001)
 
@@ -17,7 +17,6 @@ datagen = ImageDataGenerator(
     rotation_range=30,
     width_shift_range=0.2,
     height_shift_range=0.2,
-    rescale=1./255,
     shear_range=0.2,
     zoom_range=0.2,
     horizontal_flip=True,
@@ -84,13 +83,14 @@ print "Check the shape of validation outputs: {0}".format(vali_ans.shape)
 model.add(Convolution2D(20,3,3,input_shape=(3,32,32)))
 model.add(Activation("relu"))
 model.add(MaxPooling2D((2,2)))
-#model.add(Convolution2D(20,3,3))
-#model.add(Activation("relu"))
-#model.add(MaxPooling2D((2,2)))
 model.add(Convolution2D(50,3,3))
 model.add(Activation("relu"))
 model.add(MaxPooling2D((2,2)))
+model.add(Convolution2D(100,3,3))
+model.add(Activation("relu"))
+model.add(MaxPooling2D((2,2)))
 model.add(Flatten())
+model.add(BatchNormalization(epsilon=1e-05, mode=0, axis=-1, momentum=0.99, weights=None, beta_init="zero", gamma_init="one", gamma_regularizer=None, beta_regularizer=None))
 #model.add(Dense(output_dim=100))
 #model.add(Activation("sigmoid"))
 #model.add(Dropout(0.25))
@@ -137,7 +137,7 @@ switch = 1
 sw = 1
 first_time = 0
 control = int(argv[3])
-max_time = 1000
+max_time = 200
 
 def fit_model(tx, ty):
     global first_time
@@ -152,8 +152,8 @@ def fit_model(tx, ty):
     while(max_time > 0):
         print "{0}th epoch, continuous overfitting: {1}".format(self_counter, cons_non_decay)
         print "current best val_loss_min = {0}".format(val_loss_min)
-        #hist = model.fit_generator(datagen.flow(tx, ty, batch_size=int(argv[1])), nb_epoch=1, validation_data=(vali_data, vali_ans), samples_per_epoch=training_data.shape[0]*sw)
-        hist = model.fit(tx, ty, batch_size=int(argv[1]) * switch, nb_epoch=1, validation_data=(vali_data, vali_ans))
+        hist = model.fit_generator(datagen.flow(tx, ty, batch_size=int(argv[1])*sw*switch), nb_epoch=1, validation_data=(vali_data, vali_ans), samples_per_epoch=training_data.shape[0]*sw)
+        #hist = model.fit(tx, ty, batch_size=int(argv[1]) * switch, nb_epoch=1, validation_data=(vali_data, vali_ans))
         print hist.history
         self_counter += 1
         if hist.history["val_loss"][0] < val_loss_min - 0.005 and first_time == 0:
@@ -169,6 +169,7 @@ def fit_model(tx, ty):
         if first_time > 0: first_time -= 1
 
 if int(argv[2])==0:
+    sw = 5
     fit_model(training_data, training_ans)
 
 elif int(argv[2])==1:
@@ -177,7 +178,7 @@ elif int(argv[2])==1:
     fit_model(training_data, training_ans)
     sw = 1
     while(aul.shape[0] > 1000 and max_time > 0):
-	first_time = 20
+	first_time = 5
 	#cons_non_decay = 0
 	#switch = 1
         #fit_model(training_data, training_ans)
@@ -191,7 +192,7 @@ elif int(argv[2])==1:
         new_l_counter = 0
 	tm = new_ans.max(axis=1)
 	#print tm.shape
-	a = (((np.sum(new_ans ** 2, axis=1) - (tm ** 2) + (1 - tm) ** 2) / 10) ** 0.5) < 0.05
+	a = (((np.sum(new_ans ** 2, axis=1) - (tm ** 2) + (1 - tm) ** 2) / 10) ** 0.5) < 0.2
 	#print a
 	#b = (np.random.random_sample(tm.shape) < (val_acc_max))
 	#print b
@@ -229,7 +230,7 @@ elif int(argv[2])==1:
         #      optimizer=ao,
         #      metrics=["accuracy"])
         val_loss_min = 1000.
-	switch = training_data.shape[0] / 4000
+	switch *= 4
 	#model.reset_states()
         fit_model(training_data, training_ans)
         #model.save(argv[4])
