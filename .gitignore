@@ -3,3 +3,4 @@ ENV
 *.swp
 */report_doc
 */data
+*/test
