@@ -5,38 +5,54 @@ from sys import argv
 import csv
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import Normalizer
-import nltk
+from sys import argv
 
-trans = TfidfVectorizer(stop_words="english", analyzer="word", ngram_range=(1, 3), lowercase=True, max_df=0.5, min_df=2)
+trans = TfidfVectorizer(stop_words="english", analyzer="word", ngram_range=(1, 3), lowercase=True, max_df=0.95, min_df=2)
 
-dd = open("data/docs.txt", "r")
-print "Fitting TfV..."
+dd = open(argv[1] + "docs.txt", "r")
+
+#dds = dd.read()
+#dd.close()
+#dds = re.compile("\w+").findall(dds)
+
+#print dds
+
+#tokens = nltk.word_tokenize(dds)
+
+#stemmer = nltk.stem.snowball.SnowballStemmer("english")
+
+#dds = "".join([stemmer.stem(i) + " " for i in dds if not i.isdigit()])
+
+#print dds
+
+#print "Fitting TfV..."
 trans.fit(dd)
 #print trans.vocabulary_
 dd.close()
 
-data = [i.strip() for i in open("data/title_StackOverflow.txt", "r")]
+data = [i.strip() for i in open(argv[1] + "title_StackOverflow.txt", "r")]
 
-print "Transforming training data to vectors"
+#print "Transforming training data to vectors"
 train_data = trans.transform(data)
-print train_data.shape
+#print train_data.shape
 
-svd = TruncatedSVD(n_components=100)
+svd = TruncatedSVD(n_components=20)
 normalizer = Normalizer(copy=False, norm="l2")
 lsa = make_pipeline(svd, normalizer)
 
-print "Reducing dimension of vectors..."
+#print "Reducing dimension of vectors..."
 train_data = lsa.fit_transform(train_data)
-print train_data.shape
+#print train_data.shape
 
-cluster_count = 70
+cluster_count = 100
 
 #clf = SpectralClustering(n_clusters=20)
 #clf = AgglomerativeClustering(n_clusters=20)
 clf = KMeans(n_clusters=cluster_count)
 
-print "Clustering and predicting..."
+#print "Clustering and predicting..."
 predicted = clf.fit_predict(train_data)
+"""
 print "Verifing data..."
 veri = [0] * cluster_count
 for i in clf.labels_:
@@ -45,18 +61,19 @@ print veri
 mv = max(veri)
 maxI = 0
 """
+"""
 for i in range(len(veri)):
     if veri[i] == mv: maxI = i
 for i in range(len(train_data)):
     if clf.labels_[i] == maxI: print data[i]
 """
-print "Opening testing data..."
-outfile = open(argv[1], "w")
+#print "Opening testing data..."
+outfile = open(argv[2], "w")
 outfile.write("ID,Ans\n")
 
 not_first = False
 
-print "Judging answers..."
+#print "Judging answers..."
 with open("data/check_index.csv", "rb") as check_csv:
     check_data = csv.reader(check_csv, delimiter=",", quotechar='"')
     for i in check_data:
